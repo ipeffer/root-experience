@@ -1,0 +1,14 @@
+---
+description: UI and UX style guidance for customer-facing flows
+globs: **/*.{tsx,css}
+alwaysApply: false
+---
+
+# UI Style Guidance
+
+- Keep forms short, clear, and mobile-first.
+- Use straightforward language; avoid jargon.
+- Explicitly state booking is a request and subject to confirmation.
+- Make primary actions obvious: continue, submit request, view product.
+- Ensure error and success states are easy to understand.
+- Preserve accessibility basics (labels, focus visibility, contrast).

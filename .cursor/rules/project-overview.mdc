@@ -1,0 +1,13 @@
+---
+description: ROOT Experience product and boundary context
+alwaysApply: true
+---
+
+# ROOT Experience Overview
+
+- This repo contains an MVP with two modules: Gift Constructor and Booking Assistant.
+- The product complements existing `rootwinery.it` + Shopify flows; it does not replace them.
+- Gift outcomes either redirect to existing Shopify URLs or create a lead request.
+- Booking flow creates requests only; no instant confirmations.
+- Required localization: English and Italian; Russian is optional.
+- Keep implementation lean, shippable, and documentation-aligned.

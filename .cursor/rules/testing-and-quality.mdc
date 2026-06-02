@@ -1,0 +1,13 @@
+---
+description: Testing and quality gates for MVP release readiness
+alwaysApply: true
+---
+
+# Testing and Quality
+
+- Add Playwright smoke tests for Gift Constructor and Booking Assistant.
+- Test at least English and Italian critical paths.
+- Verify consent capture in each form submission flow.
+- Verify Shopify redirects and booking-request completion state.
+- Reject any implementation that introduces payment/checkout flows.
+- Keep docs and tests updated in the same PR as behavior changes.

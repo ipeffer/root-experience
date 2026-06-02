@@ -1,0 +1,14 @@
+---
+description: Coding standards for TypeScript Next.js MVP
+globs: **/*.{ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Coding Standards
+
+- Use strict TypeScript types; avoid `any` unless justified.
+- Validate all external input with Zod on the server boundary.
+- Keep modules small and single-responsibility.
+- Isolate third-party integrations behind adapter interfaces.
+- Avoid hardcoded public strings in UI; use translation keys.
+- Never commit secrets or provider credentials.

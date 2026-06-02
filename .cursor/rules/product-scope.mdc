@@ -1,0 +1,18 @@
+---
+description: Protect MVP from scope creep and forbidden features
+alwaysApply: true
+---
+
+# Product Scope Guardrails
+
+Never add these in MVP:
+- Payment processing
+- Direct checkout
+- Instant booking confirmation
+- Full admin CRM/dashboard suite
+
+Always enforce:
+- Booking Assistant creates request only
+- Gift Constructor redirects to Shopify or captures lead
+- Consent is required on each form
+- Public text is multilingual-ready (`en`, `it`, optional `ru`)
