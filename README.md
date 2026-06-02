@@ -16,7 +16,7 @@ Help visitors:
 - Booking Assistant creates requests only
 - Gift Constructor either redirects to Shopify URLs or creates a lead request
 
-## Tech Stack (Planned)
+## Tech Stack
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
 - Supabase (data + storage as needed)
@@ -26,10 +26,14 @@ Help visitors:
 - Playwright (E2E)
 - Vercel deployment
 
-## Repository Layout (MVP planning stage)
+## Repository Layout
 - `docs/` product and architecture documentation
 - `.cursor/rules/` project-level AI guidance
-- `app/`, `components/`, `lib/`, `config/`, `supabase/`, `tests/` placeholders for implementation
+- `app/` route handlers for public flows, admin route, and API endpoints
+- `lib/` domain logic (recommendations, validation, submissions, notifications, admin auth)
+- `config/` editable catalog data and flow configuration
+- `supabase/` schema migrations and policy setup
+- `tests/` unit/integration tests and Playwright public-flow smoke tests
 
 ## Multilingual Requirement
 All public text must be localization-ready from day one.

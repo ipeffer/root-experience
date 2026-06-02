@@ -19,6 +19,7 @@
 - [ ] Error logging and basic monitoring enabled
 
 ## QA
+- [x] Typecheck passes (`npm run typecheck`)
 - [x] Build passes (`npm run build`)
 - [x] Unit/integration tests pass (`npm test`)
 - [x] Playwright smoke tests pass in preview

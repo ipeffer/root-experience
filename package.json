@@ -3,18 +3,24 @@
   "private": true,
   "scripts": {
     "lint": "tsc --noEmit",
-    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "build": "next build",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
+    "next": "^16.0.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
-    "@types/node": "^25.9.1",
+    "@types/node": "25.9.1",
+    "@types/react": "19.2.16",
     "tsx": "^4.20.6",
     "typescript": "^6.0.3",
     "vitest": "^3.2.4"

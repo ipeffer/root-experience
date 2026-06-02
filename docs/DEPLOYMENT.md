@@ -40,33 +40,35 @@ Use `.env.example` as the source of truth. Configure the same keys for `preview`
 
 - Install command detected by Vercel: `npm install`
 - Build command currently used: `npm run build`
-- Current `build` script in `package.json`: `tsc --noEmit`
+- Current `build` script in `package.json`: `next build`
+- Type-check command: `npm run typecheck` (`tsc --noEmit`)
+- Optional consolidated local gate: `npm run check` (`typecheck` + `test`)
 
 ## Next.js Configuration Check
 
 - No `next.config.*` file is present.
-- `next` is not currently listed in `package.json` dependencies.
-- Vercel project framework detection is currently `null` (not detected as Next.js).
+- `next`, `react`, and `react-dom` are listed in `package.json` dependencies.
+- `next-env.d.ts` is present for TypeScript integration.
+- `next build` now produces `.next/` runtime artifacts expected by Vercel.
 
-## Deployment Attempt Status
+## Previous Deployment Blocker (Resolved)
 
 - Vercel project created/linked: `root-experience`
-- Latest deployment state: `ERROR`
-- Deployment URL: `https://root-experience-g3f6y0rmi-ipeffer.vercel.app`
-- Inspector URL: `https://vercel.com/ipeffer/root-experience/85eHg9sTwm9hb4ArQQCjRyWHN9pb`
+- Prior latest deployment state: `ERROR`
+- Prior deployment URL: `https://root-experience-g3f6y0rmi-ipeffer.vercel.app`
+- Prior inspector URL: `https://vercel.com/ipeffer/root-experience/85eHg9sTwm9hb4ArQQCjRyWHN9pb`
 
 ### Build Error (from deployment logs)
 - `No Output Directory named "public" found after the Build completed.`
 
-This happens because the current build (`tsc --noEmit`) emits no deployable output and the project has no configured output directory artifact.
+This happened because the previous build (`tsc --noEmit`) emitted no deployable output.
+The repository now uses `next build`, which generates `.next/` for Vercel.
 
-## Next Steps to Reach a Green Deploy
+## Next Steps to Reach a Green Preview Deploy
 
 1. Set all required `preview` and `production` environment variables in Vercel Project Settings.
-2. Configure a deployable output target for the current app architecture:
-   - either provide a real output directory via project settings / `vercel.json`, or
-   - migrate to an application framework build that emits runtime artifacts (for example, a fully configured Next.js app).
-3. Re-run preview deploy after output configuration is in place.
+2. Keep framework auto-detection enabled for Next.js and run a new preview deployment.
+3. Verify preview health checks for `/`, `/gift`, `/booking`, and API submission endpoints.
 
 ## Product Scope Guardrails
 
