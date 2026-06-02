@@ -1,3 +1,4 @@
+import { createGiftPage } from "../gift-pages/service";
 import { matchGift } from "../recommendations/matchGift";
 import type { GiftType, RecommendationInput } from "../recommendations/types";
 import { submitGiftLead } from "../submissions/service";
@@ -23,6 +24,15 @@ export interface RecommendationResponse {
     explanation: string;
     ctaUrl: string;
   }>;
+}
+
+export interface PublicGiftLeadResponse {
+  ok: true;
+  id: string;
+  createdAt: string;
+  slug: string;
+  giftPageUrl: string;
+  mock?: true;
 }
 
 const BUDGET_BUCKET_TO_EUR: Record<BudgetBucket, number> = {
@@ -70,35 +80,73 @@ export function getGiftRecommendation(input: unknown): RecommendationResponse {
   };
 }
 
-export async function submitPublicGiftLead(input: unknown) {
+export async function submitPublicGiftLead(input: unknown): Promise<
+  | PublicGiftLeadResponse
+  | { ok: false; code: "VALIDATION_ERROR"; message: string; details: string[] }
+  | { ok: false; code: "CONFIG_ERROR"; message: string }
+  | { ok: false; code: "DATABASE_ERROR"; message: string }
+> {
   const parsed: PublicGiftLeadInput = publicGiftLeadSchema.parse(input);
 
-  const result = await submitGiftLead({
+  const leadResult = await submitGiftLead({
     language: parsed.language,
     source: "gift-constructor-public",
-    contactName: parsed.contactName,
+    contactName: parsed.giverName,
     email: parsed.email,
     phoneOrWhatsApp: parsed.phoneOrWhatsApp,
     answers: {
+      recipientName: parsed.recipientName,
+      giverName: parsed.giverName,
+      personalMessage: parsed.personalMessage,
       recommendationId: parsed.recommendationId,
+      recommendationTitle: parsed.recommendationTitle,
+      occasion: parsed.occasion,
+      ctaUrl: parsed.ctaUrl,
       ...parsed.answers,
     },
     consent: parsed.consent,
   });
 
-  if (result.ok) {
-    return result;
+  const isMockLead = !leadResult.ok && leadResult.code === "CONFIG_ERROR";
+  if (!leadResult.ok && !isMockLead) {
+    return leadResult;
   }
 
-  if (result.code === "CONFIG_ERROR") {
-    // TODO: Remove this temporary mock fallback once Supabase env is configured in all environments.
-    return {
-      ok: true as const,
-      id: `mock-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      mock: true as const,
-    };
+  const leadId = leadResult.ok ? leadResult.id : undefined;
+  const createdAt = leadResult.ok ? leadResult.createdAt : new Date().toISOString();
+
+  const pageResult = await createGiftPage({
+    language: parsed.language,
+    occasion: parsed.occasion,
+    recipientName: parsed.recipientName,
+    giverName: parsed.giverName,
+    personalMessage: parsed.personalMessage,
+    recommendedGiftId: parsed.recommendationId,
+    recommendedGiftTitle: parsed.recommendationTitle,
+    ctaUrl: parsed.ctaUrl,
+    leadId,
+    status: "active",
+  });
+
+  if (!pageResult.ok) {
+    if (isMockLead) {
+      return {
+        ok: false,
+        code: "DATABASE_ERROR",
+        message: pageResult.message,
+      };
+    }
+    return pageResult;
   }
 
-  return result;
+  const giftPageUrl = `/gift/g/${pageResult.slug}?lang=${parsed.language}`;
+
+  return {
+    ok: true,
+    id: leadId ?? pageResult.id,
+    createdAt,
+    slug: pageResult.slug,
+    giftPageUrl,
+    mock: isMockLead || pageResult.mock ? true : undefined,
+  };
 }

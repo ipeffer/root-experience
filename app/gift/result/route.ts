@@ -1,3 +1,5 @@
+import { renderPublicPage } from "../../../lib/ui/publicPage";
+
 type Locale = "en" | "it" | "ru";
 
 const copy: Record<
@@ -12,7 +14,9 @@ const copy: Record<
     ctaShopify: string;
     ctaSubmit: string;
     leadTitle: string;
-    fullName: string;
+    recipientName: string;
+    giverName: string;
+    personalMessageField: string;
     email: string;
     phone: string;
     consent: string;
@@ -31,15 +35,17 @@ const copy: Record<
     fallback: "Alternative ideas",
     personalMessage: "Your message",
     ctaShopify: "Open Shopify offer",
-    ctaSubmit: "Send request to concierge",
-    leadTitle: "Leave your details",
-    fullName: "Full name",
-    email: "Email",
+    ctaSubmit: "Create your gift page",
+    leadTitle: "Personalize and share your gift",
+    recipientName: "Recipient name",
+    giverName: "Your name (giver)",
+    personalMessageField: "Personal message for the recipient",
+    email: "Your email",
     phone: "Phone / WhatsApp (optional)",
     consent: "I agree to the processing of my data to receive the gift proposal.",
-    submit: "Submit request",
-    success: "Thank you! Your request has been received.",
-    mockWarning: "Temporary mode: request saved with a mock adapter.",
+    submit: "Create gift page",
+    success: "Your personalized gift page is ready.",
+    mockWarning: "Temporary mode: saved with a mock adapter.",
     error: "Unable to submit now. Please try again.",
     back: "Back to Gift Constructor",
   },
@@ -51,15 +57,17 @@ const copy: Record<
     fallback: "Idee alternative",
     personalMessage: "Il tuo messaggio",
     ctaShopify: "Apri offerta Shopify",
-    ctaSubmit: "Invia richiesta al concierge",
-    leadTitle: "Lascia i tuoi contatti",
-    fullName: "Nome completo",
-    email: "Email",
+    ctaSubmit: "Crea la tua pagina regalo",
+    leadTitle: "Personalizza e condividi il tuo regalo",
+    recipientName: "Nome del destinatario",
+    giverName: "Il tuo nome (mittente)",
+    personalMessageField: "Messaggio personale per il destinatario",
+    email: "La tua email",
     phone: "Telefono / WhatsApp (opzionale)",
     consent: "Acconsento al trattamento dei miei dati per ricevere la proposta regalo.",
-    submit: "Invia richiesta",
-    success: "Grazie! La tua richiesta e stata ricevuta.",
-    mockWarning: "Modalita temporanea: richiesta salvata con adapter mock.",
+    submit: "Crea pagina regalo",
+    success: "La tua pagina regalo personalizzata e pronta.",
+    mockWarning: "Modalita temporanea: salvato con adapter mock.",
     error: "Impossibile inviare ora. Riprova.",
     back: "Torna al Costruttore Regalo",
   },
@@ -71,15 +79,17 @@ const copy: Record<
     fallback: "Alternativnye idei",
     personalMessage: "Vashe soobshchenie",
     ctaShopify: "Otkryt' predlozhenie Shopify",
-    ctaSubmit: "Otpravit' zapros kons'erzhu",
-    leadTitle: "Ostav'te kontakty",
-    fullName: "Polnoe imya",
-    email: "Email",
+    ctaSubmit: "Sozdat' podarochnuyu stranitsu",
+    leadTitle: "Personaliziruyte i podelites' podarkom",
+    recipientName: "Imya poluchatelya",
+    giverName: "Vashe imya (daritel')",
+    personalMessageField: "Lichnoe poslanie dlya poluchatelya",
+    email: "Vash email",
     phone: "Telefon / WhatsApp (neobyazatel'no)",
     consent: "Ya soglasen na obrabotku dannykh dlya polucheniya predlozheniya.",
-    submit: "Otpravit' zapros",
-    success: "Spasibo! Vash zapros poluchen.",
-    mockWarning: "Vremennyy rezhim: zapros sokhranen cherez mock adapter.",
+    submit: "Sozdat' podarochnuyu stranitsu",
+    success: "Vasha personalizirovannaya stranitsa gotova.",
+    mockWarning: "Vremennyy rezhim: sokhraneno cherez mock adapter.",
     error: "Ne udalos' otpravit'. Poprobuyte snova.",
     back: "Nazad k podboru podarka",
   },
@@ -106,137 +116,33 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
     alcoholFree: searchParams.get("giftType") === "non_alcoholic",
   };
 
-  return `<!doctype html>
-<html lang="${locale}">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${t.title} | ROOT Experience</title>
-    <style>
-      :root {
-        --bg: #f4efe6;
-        --card: #fff9f0;
-        --line: #d6c3a4;
-        --ink: #2f261d;
-        --muted: #6e5b48;
-        --accent: #7a4b2b;
-        --accent-2: #a86f3e;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: "Avenir Next", "Segoe UI", sans-serif;
-        color: var(--ink);
-        background: radial-gradient(circle at top, #f9f4eb 0%, var(--bg) 42%, #efe4d2 100%);
-      }
-      .wrap {
-        padding: 20px 14px 50px;
-        max-width: 760px;
-        margin: 0 auto;
-      }
-      .card {
-        background: color-mix(in oklab, var(--card), white 10%);
-        border: 1px solid var(--line);
-        border-radius: 20px;
-        padding: 18px;
-        margin-bottom: 14px;
-        box-shadow: 0 12px 30px rgba(64, 42, 24, 0.08);
-      }
-      h1 { margin: 0 0 8px; font-size: 1.45rem; }
-      .subtitle { margin: 0 0 8px; color: var(--muted); line-height: 1.4; }
-      .label { color: var(--muted); font-size: 0.85rem; margin-bottom: 6px; }
-      .gift-name { margin: 0; font-size: 1.12rem; font-weight: 700; }
-      .gift-expl { margin: 8px 0 0; line-height: 1.45; }
-      .fallback {
-        border-top: 1px dashed var(--line);
-        margin-top: 10px;
-        padding-top: 10px;
-      }
-      .fallback-item { margin-top: 8px; }
-      .message {
-        border-left: 3px solid #b88454;
-        padding: 8px 10px;
-        background: #f8efe3;
-        border-radius: 8px;
-      }
-      .actions {
-        display: grid;
-        gap: 8px;
-        margin-top: 10px;
-      }
-      .btn {
-        border: 0;
-        border-radius: 999px;
-        padding: 11px 14px;
-        font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-      }
-      .btn-primary {
-        background: linear-gradient(90deg, var(--accent), var(--accent-2));
-        color: #fff;
-      }
-      .btn-ghost {
-        background: #e8ddcd;
-        color: var(--ink);
-      }
-      form {
-        display: grid;
-        gap: 8px;
-      }
-      input {
-        width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 10px;
-      }
-      .consent {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        font-size: 0.9rem;
-      }
-      .status {
-        margin-top: 8px;
-        min-height: 20px;
-        color: #245f30;
-      }
-      .status.error { color: #8a2923; }
-      .back {
-        display: inline-block;
-        color: var(--muted);
-        margin-top: 6px;
-      }
-      @media (min-width: 768px) {
-        .wrap { padding-top: 34px; }
-        .card { padding: 24px; }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="wrap">
-      <section class="card">
-        <h1>${t.title}</h1>
-        <p class="subtitle">${t.subtitle}</p>
-        <div id="recommendation">${t.loading}</div>
-      </section>
+  const body = `
+      <div class="page-stack">
+        <section class="page-card">
+          <h1>${t.title}</h1>
+          <p class="subtitle">${t.subtitle}</p>
+          <div id="recommendation">${t.loading}</div>
+        </section>
+        <section class="page-card">
+          <p class="label">${t.leadTitle}</p>
+          <form id="lead-form">
+            <input type="text" name="recipientName" placeholder="${t.recipientName}" required />
+            <input type="text" name="giverName" placeholder="${t.giverName}" required />
+            <textarea name="personalMessage" placeholder="${t.personalMessageField}">${payload.personalMessage}</textarea>
+            <input type="email" name="email" placeholder="${t.email}" required />
+            <input type="text" name="phoneOrWhatsApp" placeholder="${t.phone}" />
+            <label class="consent">
+              <input type="checkbox" name="consent" required />
+              <span>${t.consent}</span>
+            </label>
+            <button class="btn btn-primary" type="submit">${t.submit}</button>
+          </form>
+          <p id="status" class="status"></p>
+          <a class="back" href="/gift?lang=${locale}">${t.back}</a>
+        </section>
+      </div>`;
 
-      <section class="card">
-        <p class="label">${t.leadTitle}</p>
-        <form id="lead-form">
-          <input type="text" name="contactName" placeholder="${t.fullName}" required />
-          <input type="email" name="email" placeholder="${t.email}" required />
-          <input type="text" name="phoneOrWhatsApp" placeholder="${t.phone}" />
-          <label class="consent">
-            <input type="checkbox" name="consent" required />
-            <span>${t.consent}</span>
-          </label>
-          <button class="btn btn-primary" type="submit">${t.submit}</button>
-        </form>
-        <p id="status" class="status"></p>
-        <a class="back" href="/gift?lang=${locale}">${t.back}</a>
-      </section>
-    </main>
+  const scripts = `
     <script type="application/json" id="copy-data">${JSON.stringify(t)}</script>
     <script type="application/json" id="payload">${JSON.stringify(payload)}</script>
     <script>
@@ -246,6 +152,7 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
       const formEl = document.getElementById("lead-form");
       const statusEl = document.getElementById("status");
       let recommendationId = "";
+      let recommendationTitle = "";
       let ctaUrl = "https://shopify.example.com/root-experience/gifts";
 
       function escapeHtml(value) {
@@ -269,6 +176,7 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
         }
 
         recommendationId = data.recommendation.id;
+        recommendationTitle = data.recommendation.name;
         ctaUrl = data.recommendation.ctaUrl || ctaUrl;
         const fallbackHtml = (data.fallbacks || [])
           .map((item) =>
@@ -286,8 +194,8 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
           '<p class="gift-expl">' + escapeHtml(data.recommendation.explanation) + "</p>" +
           messageBlock +
           '<div class="actions">' +
-          '<a class="btn btn-primary" href="' + escapeHtml(ctaUrl) + '" target="_blank" rel="noopener noreferrer">' + t.ctaShopify + "</a>" +
-          '<a class="btn btn-ghost" href="#lead-form">' + t.ctaSubmit + "</a>" +
+          '<a class="btn btn-wine" href="' + escapeHtml(ctaUrl) + '" target="_blank" rel="noopener noreferrer">' + t.ctaShopify + "</a>" +
+          '<a class="btn btn-primary" href="#lead-form">' + t.ctaSubmit + "</a>" +
           "</div>" +
           '<div class="fallback"><p class="label">' + t.fallback + "</p>" + fallbackHtml + "</div>";
       }
@@ -306,18 +214,20 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
         const formData = new FormData(formEl);
         const body = {
           language: payload.language,
-          contactName: String(formData.get("contactName") || ""),
+          recipientName: String(formData.get("recipientName") || ""),
+          giverName: String(formData.get("giverName") || ""),
+          personalMessage: String(formData.get("personalMessage") || ""),
           email: String(formData.get("email") || ""),
           phoneOrWhatsApp: String(formData.get("phoneOrWhatsApp") || ""),
           consent: formData.get("consent") === "on",
           recommendationId,
+          recommendationTitle,
+          ctaUrl,
+          occasion: payload.occasion,
           answers: {
-            occasion: payload.occasion,
             recipientProfile: payload.recipientProfile,
             budgetBucket: payload.budgetBucket,
             giftType: payload.giftType,
-            personalMessage: payload.personalMessage,
-            ctaUrl,
           },
         };
 
@@ -328,22 +238,31 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
         });
         const data = await response.json();
 
-        if (!data.ok) {
+        if (!data.ok || !data.giftPageUrl) {
           statusEl.classList.add("error");
           statusEl.textContent = t.error;
           return;
         }
 
-        statusEl.textContent = data.mock ? t.success + " " + t.mockWarning : t.success;
-        formEl.reset();
+        if (data.mock) {
+          statusEl.textContent = t.success + " " + t.mockWarning;
+        }
+
+        window.location.href = data.giftPageUrl;
       });
 
       loadRecommendation().catch(() => {
         recommendationEl.innerHTML = '<p class="status error">' + t.error + "</p>";
       });
-    </script>
-  </body>
-</html>`;
+    </script>`;
+
+  return renderPublicPage({
+    locale,
+    title: `${t.title} | ROOT Experience`,
+    activeNav: "gift",
+    body,
+    scripts,
+  });
 }
 
 export async function GET(request: Request): Promise<Response> {

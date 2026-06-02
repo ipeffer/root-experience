@@ -1,3 +1,5 @@
+import { renderPublicPage } from "../../lib/ui/publicPage";
+
 type Locale = "en" | "it" | "ru";
 
 const copy: Record<
@@ -173,132 +175,8 @@ function getLocale(url: URL): Locale {
 function renderGiftPage(locale: Locale): string {
   const t = copy[locale];
 
-  return `<!doctype html>
-<html lang="${locale}">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${t.title} | ROOT Experience</title>
-    <style>
-      :root {
-        --bg: #f4efe6;
-        --card: #fff9f0;
-        --line: #d6c3a4;
-        --ink: #2f261d;
-        --muted: #6e5b48;
-        --accent: #7a4b2b;
-        --accent-2: #a86f3e;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: "Avenir Next", "Segoe UI", sans-serif;
-        background: radial-gradient(circle at top, #f9f4eb 0%, var(--bg) 42%, #efe4d2 100%);
-        color: var(--ink);
-      }
-      .wrap {
-        min-height: 100vh;
-        padding: 20px 14px 40px;
-      }
-      .card {
-        max-width: 640px;
-        margin: 0 auto;
-        background: color-mix(in oklab, var(--card), white 10%);
-        border: 1px solid var(--line);
-        border-radius: 20px;
-        padding: 20px 16px;
-        box-shadow: 0 12px 30px rgba(64, 42, 24, 0.08);
-      }
-      h1 { margin: 0 0 8px; font-size: 1.5rem; }
-      .subtitle { margin: 0 0 16px; color: var(--muted); line-height: 1.35; }
-      .lang {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 12px;
-      }
-      select {
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 7px 12px;
-        background: #fff;
-        color: var(--ink);
-      }
-      .progress {
-        height: 8px;
-        width: 100%;
-        border-radius: 999px;
-        background: #eadfcd;
-        margin: 8px 0 20px;
-        overflow: hidden;
-      }
-      .progress > span {
-        display: block;
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent), var(--accent-2));
-        transition: width 0.2s ease;
-      }
-      .step-title { font-weight: 600; margin-bottom: 10px; }
-      .grid {
-        display: grid;
-        gap: 10px;
-      }
-      .choice {
-        width: 100%;
-        text-align: left;
-        border: 1px solid var(--line);
-        background: #fff;
-        color: var(--ink);
-        border-radius: 12px;
-        padding: 12px;
-        font-size: 0.95rem;
-      }
-      .choice.selected {
-        border-color: var(--accent);
-        background: #f5eadf;
-      }
-      textarea {
-        width: 100%;
-        min-height: 110px;
-        border-radius: 12px;
-        border: 1px solid var(--line);
-        padding: 12px;
-        resize: vertical;
-      }
-      .nav {
-        margin-top: 18px;
-        display: flex;
-        gap: 8px;
-      }
-      button {
-        border: 0;
-        border-radius: 999px;
-        padding: 11px 14px;
-        font-weight: 600;
-      }
-      .ghost {
-        background: #e8ddcd;
-        color: var(--ink);
-      }
-      .primary {
-        background: linear-gradient(90deg, var(--accent), var(--accent-2));
-        color: #fff;
-        margin-left: auto;
-      }
-      .footer {
-        margin-top: 18px;
-        font-size: 0.85rem;
-        color: var(--muted);
-        text-align: center;
-      }
-      @media (min-width: 768px) {
-        .wrap { padding: 34px 20px 70px; }
-        .card { padding: 30px; }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="wrap">
-      <section class="card">
+  const body = `
+      <section class="page-card">
         <div class="lang">
           <select id="lang">
             <option value="en"${locale === "en" ? " selected" : ""}>English</option>
@@ -315,9 +193,10 @@ function renderGiftPage(locale: Locale): string {
           <button id="back-btn" class="ghost">${t.back}</button>
           <button id="next-btn" class="primary">${t.next}</button>
         </div>
-        <p class="footer">${t.footer}</p>
-      </section>
-    </main>
+        <p class="inline-footer">${t.footer}</p>
+      </section>`;
+
+  const scripts = `
     <script type="application/json" id="copy-data">${JSON.stringify(t)}</script>
     <script type="application/json" id="wizard-model">${JSON.stringify(wizardModel)}</script>
     <script>
@@ -414,9 +293,15 @@ function renderGiftPage(locale: Locale): string {
       });
 
       renderStep();
-    </script>
-  </body>
-</html>`;
+    </script>`;
+
+  return renderPublicPage({
+    locale,
+    title: `${t.title} | ROOT Experience`,
+    activeNav: "gift",
+    body,
+    scripts,
+  });
 }
 
 export async function GET(request: Request): Promise<Response> {

@@ -12,6 +12,8 @@ export async function POST(request: Request): Promise<Response> {
           ok: true,
           id: result.id,
           createdAt: result.createdAt,
+          slug: result.slug,
+          giftPageUrl: result.giftPageUrl,
           mock: "mock" in result ? result.mock : false,
         },
         { status: 201 },

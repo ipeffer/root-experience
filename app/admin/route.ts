@@ -5,6 +5,7 @@ import {
   type AdminTable,
   updateSubmission,
 } from "../../lib/admin/dashboard";
+import { getGiftPageByLeadId } from "../../lib/gift-pages/service";
 import {
   buildAdminSessionCookie,
   clearAdminSessionCookie,
@@ -146,6 +147,7 @@ function renderDashboardPage(input: {
     internal_notes: string | null;
     answers: Record<string, unknown>;
   } | null;
+  giftPageUrl?: string | null;
   flashMessage?: string;
 }): string {
   const exportQuery = new URLSearchParams({
@@ -255,6 +257,11 @@ function renderDashboardPage(input: {
             <p class="muted">ID: ${escapeHtml(input.detail.id)}</p>
             <p class="muted">Created: ${safeDate(escapeHtml(input.detail.created_at))}</p>
             <p class="muted">Language: ${escapeHtml(input.detail.language)} | Source: ${escapeHtml(input.detail.source)} | Consent: ${input.detail.consent ? "yes" : "no"}</p>
+            ${
+              input.giftPageUrl
+                ? `<p><a href="${escapeHtml(input.giftPageUrl)}" target="_blank" rel="noopener noreferrer">Open gift page</a></p>`
+                : ""
+            }
             <form method="post" action="/admin">
               <input type="hidden" name="action" value="update" />
               <input type="hidden" name="table" value="${input.selectedTable}" />
@@ -324,6 +331,14 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const detail = selectedId ? await getSubmissionDetail(selectedTable, selectedId) : null;
+  let giftPageUrl: string | null = null;
+  if (detail && selectedTable === "gift_leads") {
+    const giftPage = await getGiftPageByLeadId(detail.id);
+    if (giftPage) {
+      giftPageUrl = `/gift/g/${giftPage.slug}?lang=${detail.language}`;
+    }
+  }
+
   return new Response(
     renderDashboardPage({
       giftRows,
@@ -334,6 +349,7 @@ export async function GET(request: Request): Promise<Response> {
       from,
       to,
       detail,
+      giftPageUrl,
       flashMessage,
     }),
     { status: 200, headers: { "content-type": "text/html; charset=utf-8" } },
