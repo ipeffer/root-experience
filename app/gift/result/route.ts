@@ -240,7 +240,10 @@ function renderResultPage(locale: Locale, searchParams: URLSearchParams): string
 
         if (!data.ok || !data.giftPageUrl) {
           statusEl.classList.add("error");
-          statusEl.textContent = t.error;
+          const detail = Array.isArray(data.details) && data.details.length > 0
+            ? data.details.join(", ")
+            : (data.message || "");
+          statusEl.textContent = detail ? t.error + " " + detail : t.error;
           return;
         }
 

@@ -9,11 +9,19 @@ import {
 
 const mockGiftPages = new Map<string, GiftPageRecord>();
 
+function isMissingGiftPagesTable(message: string): boolean {
+  return /gift_pages/i.test(message) && /(schema cache|does not exist|could not find the table)/i.test(message);
+}
+
 function toGiftPageRecord(row: GiftPageRecord): GiftPageRecord {
   return row;
 }
 
-async function slugExists(slug: string): Promise<boolean> {
+async function slugExists(slug: string, useMockOnly = false): Promise<boolean> {
+  if (useMockOnly) {
+    return mockGiftPages.has(slug);
+  }
+
   const client = getSupabaseAdminClient();
   if (!client) {
     return mockGiftPages.has(slug);
@@ -26,13 +34,16 @@ async function slugExists(slug: string): Promise<boolean> {
     .maybeSingle<{ id: string }>();
 
   if (error) {
+    if (isMissingGiftPagesTable(error.message)) {
+      return mockGiftPages.has(slug);
+    }
     throw new Error(error.message);
   }
 
   return Boolean(data);
 }
 
-async function resolveUniqueSlug(input: GiftPageCreateInput): Promise<string> {
+async function resolveUniqueSlug(input: GiftPageCreateInput, useMockOnly = false): Promise<string> {
   const base = buildGiftPageSlugBase({
     recipientName: input.recipientName,
     giverName: input.giverName,
@@ -42,13 +53,26 @@ async function resolveUniqueSlug(input: GiftPageCreateInput): Promise<string> {
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const candidate = withCollisionSuffix(base, attempt);
-    const exists = await slugExists(candidate);
+    const exists = await slugExists(candidate, useMockOnly);
     if (!exists) {
       return candidate;
     }
   }
 
   return `${base}-${Date.now().toString(36)}`;
+}
+
+async function createMockGiftPageResult(input: GiftPageCreateInput): Promise<GiftPageResult> {
+  const slug = await resolveUniqueSlug(input, true);
+  const record = createMockGiftPage(input, slug);
+  console.warn("[gift-pages] Using in-memory gift page fallback.");
+  return {
+    ok: true,
+    id: record.id,
+    slug: record.slug,
+    createdAt: record.created_at,
+    mock: true,
+  };
 }
 
 function createMockGiftPage(input: GiftPageCreateInput, slug: string): GiftPageRecord {
@@ -116,10 +140,14 @@ export async function createGiftPage(input: unknown): Promise<GiftPageResult> {
       .single<{ id: string; slug: string; created_at: string }>();
 
     if (error || !data) {
+      const message = error?.message ?? "Unable to create gift page.";
+      if (isMissingGiftPagesTable(message)) {
+        return createMockGiftPageResult(parsed.data);
+      }
       return {
         ok: false,
         code: "DATABASE_ERROR",
-        message: error?.message ?? "Unable to create gift page.",
+        message,
       };
     }
 
@@ -131,6 +159,9 @@ export async function createGiftPage(input: unknown): Promise<GiftPageResult> {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected server error.";
+    if (isMissingGiftPagesTable(message)) {
+      return createMockGiftPageResult(parsed.data);
+    }
     return { ok: false, code: "DATABASE_ERROR", message };
   }
 }
@@ -156,10 +187,17 @@ export async function getGiftPageBySlug(slug: string): Promise<GiftPageRecord | 
     .maybeSingle<GiftPageRecord>();
 
   if (error) {
+    if (isMissingGiftPagesTable(error.message)) {
+      return mockGiftPages.get(normalized) ?? null;
+    }
     throw new Error(error.message);
   }
 
-  return data ? toGiftPageRecord(data) : null;
+  if (!data) {
+    return mockGiftPages.get(normalized) ?? null;
+  }
+
+  return toGiftPageRecord(data);
 }
 
 export async function getGiftPageByLeadId(leadId: string): Promise<{ slug: string } | null> {
