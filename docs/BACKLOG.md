@@ -34,5 +34,6 @@ Use these as initial GitHub issues. Labels in brackets are suggested.
 
 ## Stretch (post-MVP)
 - Admin dashboard
+- TODO: replace temporary `/admin` password gate with full Supabase Auth admin sign-in flow
 - CRM integration
 - Automated reminder workflows

@@ -1,10 +1,13 @@
 import { ZodError } from "zod";
 
+import { notifyBookingRequest, notifyGiftLead } from "../notifications/service";
 import { getSupabaseAdminClient } from "../integrations/supabaseAdmin";
 import {
   bookingRequestSubmissionSchema,
   giftLeadSubmissionSchema,
+  type BookingRequestSubmission,
   type BookingRequestSubmissionInput,
+  type GiftLeadSubmission,
   type GiftLeadSubmissionInput,
 } from "../validation/submissions";
 
@@ -14,6 +17,29 @@ type SubmissionErrorCode = Extract<SubmissionResult, { ok: false }>["code"];
 interface SubmissionRow {
   id: string;
   created_at: string;
+}
+
+async function dispatchSubmissionNotifications(
+  table: SubmissionTable,
+  payload: GiftLeadSubmission | BookingRequestSubmission,
+  row: SubmissionRow,
+): Promise<void> {
+  const notificationMeta = {
+    id: row.id,
+    createdAt: row.created_at,
+  };
+
+  const notificationPromise =
+    table === "gift_leads"
+      ? notifyGiftLead(payload, notificationMeta)
+      : notifyBookingRequest(payload, notificationMeta);
+
+  try {
+    await notificationPromise;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[notifications] unexpected dispatch error: ${message}`);
+  }
 }
 
 export type SubmissionResult =
@@ -69,6 +95,8 @@ async function insertSubmission(table: SubmissionTable, payload: unknown): Promi
       message: error?.message ?? "Unable to persist submission.",
     };
   }
+
+  await dispatchSubmissionNotifications(table, parsed.data, data);
 
   return {
     ok: true,

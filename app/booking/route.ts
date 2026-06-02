@@ -1,5 +1,22 @@
-function renderBookingPage(): string {
-  const copy = {
+import { localeQuery, resolvePublicLocale, type PublicLocale } from "../../lib/i18n/publicLocale";
+
+const languageOptions = [
+  { value: "en", labelKey: "langEnglish" },
+  { value: "it", labelKey: "langItalian" },
+  { value: "ru", labelKey: "langRussian" },
+] as const;
+
+const experienceOptionKeys = [
+  "vineyard_tour",
+  "buggy_wine_tour",
+  "wine_tasting",
+  "picnic_romantic_experience",
+  "private_group_request",
+  "corporate_special_event",
+] as const;
+
+const copy: Record<PublicLocale, Record<string, string>> = {
+  en: {
     title: "ROOT Experience Booking Assistant",
     subtitle:
       "Send your request in a few steps. This is not an instant booking. ROOT will confirm availability personally.",
@@ -20,30 +37,139 @@ function renderBookingPage(): string {
     confirmHeader: "Review before submit",
     confirmRequestOnly:
       "This is a request only, not a confirmed booking. ROOT will confirm availability personally.",
-    mockWarning: "Temporary mode: request saved with a mock adapter.",
-  } as const;
+    fullNamePlaceholder: "Full name",
+    emailPlaceholder: "Email",
+    phonePlaceholder: "Phone / WhatsApp (optional)",
+    notesPlaceholder: "Additional details (optional)",
+    reviewExperience: "Experience",
+    reviewGuests: "Guests",
+    reviewLanguage: "Language",
+    reviewPreferredDate: "Preferred date",
+    reviewPreferredTime: "Preferred time",
+    reviewContact: "Contact",
+    validateGuests: "Please provide a valid number of guests (1-200).",
+    validateDateTime: "Please select preferred date and time.",
+    validateContact: "Please provide your name and email.",
+    validateConsent: "Please accept consent to continue.",
+    langEnglish: "English",
+    langItalian: "Italian",
+    langRussian: "Russian",
+    opt_vineyard_tour: "Vineyard tour",
+    opt_buggy_wine_tour: "Buggy wine tour",
+    opt_wine_tasting: "Wine tasting",
+    opt_picnic_romantic_experience: "Picnic / romantic experience",
+    opt_private_group_request: "Private group request",
+    opt_corporate_special_event: "Corporate / special event",
+  },
+  it: {
+    title: "Assistente Prenotazioni ROOT Experience",
+    subtitle:
+      "Invia la tua richiesta in pochi passaggi. Non e una prenotazione istantanea. ROOT confermera personalmente la disponibilita.",
+    requestNotice: "ROOT confermera personalmente la disponibilita.",
+    step1: "Scegli il tipo di esperienza",
+    step2: "Numero di ospiti",
+    step3: "Lingua preferita",
+    step4: "Date e orario preferiti",
+    step5: "Dettagli di contatto",
+    step6: "Consenso",
+    next: "Avanti",
+    back: "Indietro",
+    submit: "Invia richiesta di prenotazione",
+    sending: "Invio della richiesta...",
+    error: "Impossibile inviare la richiesta ora. Riprova.",
+    consentLabel:
+      "Acconsento al trattamento dei miei dati personali per essere ricontattato da ROOT Experience su questa richiesta di prenotazione.",
+    confirmHeader: "Rivedi prima di inviare",
+    confirmRequestOnly:
+      "Questa e solo una richiesta, non una prenotazione confermata. ROOT confermera personalmente la disponibilita.",
+    fullNamePlaceholder: "Nome completo",
+    emailPlaceholder: "Email",
+    phonePlaceholder: "Telefono / WhatsApp (opzionale)",
+    notesPlaceholder: "Dettagli aggiuntivi (opzionale)",
+    reviewExperience: "Esperienza",
+    reviewGuests: "Ospiti",
+    reviewLanguage: "Lingua",
+    reviewPreferredDate: "Data preferita",
+    reviewPreferredTime: "Orario preferito",
+    reviewContact: "Contatto",
+    validateGuests: "Inserisci un numero valido di ospiti (1-200).",
+    validateDateTime: "Seleziona data e orario preferiti.",
+    validateContact: "Inserisci nome ed email.",
+    validateConsent: "Accetta il consenso per continuare.",
+    langEnglish: "Inglese",
+    langItalian: "Italiano",
+    langRussian: "Russo",
+    opt_vineyard_tour: "Tour in vigna",
+    opt_buggy_wine_tour: "Tour in buggy tra i vigneti",
+    opt_wine_tasting: "Degustazione vino",
+    opt_picnic_romantic_experience: "Picnic / esperienza romantica",
+    opt_private_group_request: "Richiesta gruppo privato",
+    opt_corporate_special_event: "Evento aziendale / speciale",
+  },
+  ru: {
+    title: "Pomoshchnik bronirovaniya ROOT Experience",
+    subtitle:
+      "Otpravte zapros v neskolko shagov. Eto ne mgnovennoe bronirovanie. ROOT lichno podtverdit dostupnost.",
+    requestNotice: "ROOT lichno podtverdit dostupnost.",
+    step1: "Vyberite tip opyta",
+    step2: "Kolichestvo gostey",
+    step3: "Predpochtitelnyy yazyk",
+    step4: "Predpochtitelnye data i vremya",
+    step5: "Kontaktnye dannye",
+    step6: "Soglasie",
+    next: "Dalee",
+    back: "Nazad",
+    submit: "Otpravit zapros na bron",
+    sending: "Otpravlyaem vash zapros...",
+    error: "Ne udalos otpravit zapros. Pozhaluysta, poprobuyte snova.",
+    consentLabel:
+      "Ya soglasen na obrabotku moikh personalnykh dannykh, chtoby ROOT Experience mog svyazatsya so mnoy po etomu zaprosu.",
+    confirmHeader: "Proverte pered otpravkoy",
+    confirmRequestOnly:
+      "Eto tolko zapros, a ne podtverzhdennoe bronirovanie. ROOT lichno podtverdit dostupnost.",
+    fullNamePlaceholder: "Polnoe imya",
+    emailPlaceholder: "Email",
+    phonePlaceholder: "Telefon / WhatsApp (neobyazatelno)",
+    notesPlaceholder: "Dopolnitelnye detali (neobyazatelno)",
+    reviewExperience: "Opyt",
+    reviewGuests: "Gosti",
+    reviewLanguage: "Yazyk",
+    reviewPreferredDate: "Predpochtitelnaya data",
+    reviewPreferredTime: "Predpochtitelnoe vremya",
+    reviewContact: "Kontakt",
+    validateGuests: "Ukazhite korrektnoe chislo gostey (1-200).",
+    validateDateTime: "Vyberite predpochtitelnye datu i vremya.",
+    validateContact: "Ukazhite imya i email.",
+    validateConsent: "Primite soglasie, chtoby prodolzhit.",
+    langEnglish: "Angliyskiy",
+    langItalian: "Italyanskiy",
+    langRussian: "Russkiy",
+    opt_vineyard_tour: "Ekskursiya po vinogradniku",
+    opt_buggy_wine_tour: "Vintur na buggy",
+    opt_wine_tasting: "Degustatsiya vina",
+    opt_picnic_romantic_experience: "Piknik / romanticheskiy opyt",
+    opt_private_group_request: "Zapros dlya chastnoy gruppy",
+    opt_corporate_special_event: "Korporativnoe / spetsialnoe meropriyatie",
+  },
+};
 
-  const experienceOptions = [
-    { value: "vineyard_tour", label: "Vineyard tour" },
-    { value: "buggy_wine_tour", label: "Buggy wine tour" },
-    { value: "wine_tasting", label: "Wine tasting" },
-    { value: "picnic_romantic_experience", label: "Picnic / romantic experience" },
-    { value: "private_group_request", label: "Private group request" },
-    { value: "corporate_special_event", label: "Corporate / special event" },
-  ] as const;
-
-  const languageOptions = [
-    { value: "en", label: "English" },
-    { value: "it", label: "Italian" },
-    { value: "ru", label: "Russian" },
-  ] as const;
+function renderBookingPage(locale: PublicLocale): string {
+  const t = copy[locale];
+  const experienceOptions = experienceOptionKeys.map((value) => ({
+    value,
+    label: t[`opt_${value}`],
+  }));
+  const localizedLanguageOptions = languageOptions.map((option) => ({
+    value: option.value,
+    label: t[option.labelKey],
+  }));
 
   return `<!doctype html>
-<html lang="en">
+<html lang="${locale}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${copy.title}</title>
+    <title>${t.title}</title>
     <style>
       :root {
         --bg: #f4efe6;
@@ -173,33 +299,35 @@ function renderBookingPage(): string {
   <body>
     <main class="wrap">
       <section class="card">
-        <h1>${copy.title}</h1>
-        <p class="subtitle">${copy.subtitle}</p>
-        <p class="notice">${copy.requestNotice}</p>
+        <h1>${t.title}</h1>
+        <p class="subtitle">${t.subtitle}</p>
+        <p class="notice">${t.requestNotice}</p>
         <div class="progress"><span id="progress-bar" style="width: 16.66%"></span></div>
         <div id="step-title" class="step-title"></div>
         <div id="step-body"></div>
         <p id="status" class="status"></p>
         <div class="nav">
-          <button id="back-btn" class="ghost">${copy.back}</button>
-          <button id="next-btn" class="primary">${copy.next}</button>
+          <button id="back-btn" class="ghost">${t.back}</button>
+          <button id="next-btn" class="primary">${t.next}</button>
         </div>
       </section>
     </main>
-    <script type="application/json" id="copy-data">${JSON.stringify(copy)}</script>
+    <script type="application/json" id="copy-data">${JSON.stringify(t)}</script>
     <script type="application/json" id="experience-options">${JSON.stringify(experienceOptions)}</script>
-    <script type="application/json" id="language-options">${JSON.stringify(languageOptions)}</script>
+    <script type="application/json" id="language-options">${JSON.stringify(localizedLanguageOptions)}</script>
+    <script type="application/json" id="locale-data">${JSON.stringify({ locale, confirmationPath: "/booking/confirmation" })}</script>
     <script>
       const t = JSON.parse(document.getElementById("copy-data").textContent);
       const experienceOptions = JSON.parse(document.getElementById("experience-options").textContent);
       const languageOptions = JSON.parse(document.getElementById("language-options").textContent);
+      const localeData = JSON.parse(document.getElementById("locale-data").textContent);
 
       const stepTitles = [t.step1, t.step2, t.step3, t.step4, t.step5, t.step6];
       let step = 0;
       const values = {
         experienceType: "vineyard_tour",
         guests: "2",
-        preferredLanguage: "en",
+        preferredLanguage: localeData.locale,
         preferredDate: "",
         preferredTime: "",
         contactName: "",
@@ -283,15 +411,15 @@ function renderBookingPage(): string {
       function renderContactStep() {
         bodyEl.innerHTML =
           '<div class="grid">' +
-          '<input id="contact-name" type="text" placeholder="Full name" value="' + escapeHtml(values.contactName) + '" required />' +
-          '<input id="contact-email" type="email" placeholder="Email" value="' + escapeHtml(values.email) + '" required />' +
-          '<input id="contact-phone" type="text" placeholder="Phone / WhatsApp (optional)" value="' + escapeHtml(values.phoneOrWhatsApp) + '" />' +
-          '<textarea id="contact-notes" placeholder="Additional details (optional)">' + escapeHtml(values.notes) + "</textarea>" +
+          '<input id="contact-name" type="text" placeholder="' + escapeHtml(t.fullNamePlaceholder) + '" value="' + escapeHtml(values.contactName) + '" required />' +
+          '<input id="contact-email" type="email" placeholder="' + escapeHtml(t.emailPlaceholder) + '" value="' + escapeHtml(values.email) + '" required />' +
+          '<input id="contact-phone" type="text" placeholder="' + escapeHtml(t.phonePlaceholder) + '" value="' + escapeHtml(values.phoneOrWhatsApp) + '" />' +
+          '<textarea id="contact-notes" placeholder="' + escapeHtml(t.notesPlaceholder) + '">' + escapeHtml(values.notes) + "</textarea>" +
           "</div>";
       }
 
       function renderConsentStep() {
-        const languageLabel = languageOptions.find((option) => option.value === values.preferredLanguage)?.label || "English";
+        const languageLabel = languageOptions.find((option) => option.value === values.preferredLanguage)?.label || t.langEnglish;
         const experienceLabel =
           experienceOptions.find((option) => option.value === values.experienceType)?.label || values.experienceType;
         const checked = values.consent ? " checked" : "";
@@ -299,12 +427,12 @@ function renderBookingPage(): string {
         bodyEl.innerHTML =
           '<p><strong>' + t.confirmHeader + "</strong></p>" +
           '<div class="review">' +
-          "<p><strong>Experience:</strong> " + escapeHtml(experienceLabel) + "</p>" +
-          "<p><strong>Guests:</strong> " + escapeHtml(values.guests) + "</p>" +
-          "<p><strong>Language:</strong> " + escapeHtml(languageLabel) + "</p>" +
-          "<p><strong>Preferred date:</strong> " + escapeHtml(values.preferredDate) + "</p>" +
-          "<p><strong>Preferred time:</strong> " + escapeHtml(values.preferredTime) + "</p>" +
-          "<p><strong>Contact:</strong> " + escapeHtml(values.contactName) + " / " + escapeHtml(values.email) + "</p>" +
+          "<p><strong>" + t.reviewExperience + ":</strong> " + escapeHtml(experienceLabel) + "</p>" +
+          "<p><strong>" + t.reviewGuests + ":</strong> " + escapeHtml(values.guests) + "</p>" +
+          "<p><strong>" + t.reviewLanguage + ":</strong> " + escapeHtml(languageLabel) + "</p>" +
+          "<p><strong>" + t.reviewPreferredDate + ":</strong> " + escapeHtml(values.preferredDate) + "</p>" +
+          "<p><strong>" + t.reviewPreferredTime + ":</strong> " + escapeHtml(values.preferredTime) + "</p>" +
+          "<p><strong>" + t.reviewContact + ":</strong> " + escapeHtml(values.contactName) + " / " + escapeHtml(values.email) + "</p>" +
           "</div>" +
           '<p class="notice" style="margin-top:10px;">' + t.confirmRequestOnly + "</p>" +
           '<label class="consent">' +
@@ -363,16 +491,16 @@ function renderBookingPage(): string {
 
       function getValidationMessage() {
         if (step === 1) {
-          return "Please provide a valid number of guests (1-200).";
+          return t.validateGuests;
         }
         if (step === 3) {
-          return "Please select preferred date and time.";
+          return t.validateDateTime;
         }
         if (step === 4) {
-          return "Please provide your name and email.";
+          return t.validateContact;
         }
         if (step === 5) {
-          return "Please accept consent to continue.";
+          return t.validateConsent;
         }
         return t.error;
       }
@@ -436,7 +564,8 @@ function renderBookingPage(): string {
           id: String(data.id || ""),
           mock: data.mock ? "1" : "0",
         });
-        window.location.href = "/booking/confirmation?" + params.toString();
+        params.set("lang", localeData.locale);
+        window.location.href = localeData.confirmationPath + "?" + params.toString();
       }
 
       backBtn.addEventListener("click", (event) => {
@@ -476,8 +605,9 @@ function renderBookingPage(): string {
 </html>`;
 }
 
-export async function GET(): Promise<Response> {
-  return new Response(renderBookingPage(), {
+export async function GET(request: Request): Promise<Response> {
+  const locale = resolvePublicLocale(new URL(request.url));
+  return new Response(renderBookingPage(locale), {
     status: 200,
     headers: {
       "content-type": "text/html; charset=utf-8",

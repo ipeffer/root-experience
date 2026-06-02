@@ -45,6 +45,11 @@ Optional locale:
 - All forms must include consent text and consent capture
 
 ## Current Status
-This repository currently contains planning artifacts only. No dependencies, routes, integrations, or database connections have been implemented yet.
+This repository contains an implemented MVP skeleton with:
+- public Gift Constructor and Booking Assistant flows
+- submission persistence paths for gift leads and booking requests
+- optional email/Telegram admin notifications
+- an internal admin dashboard route protected by auth checks
+- automated quality gates via Vitest and Playwright
 
-See `docs/MVP_SCOPE.md` for MVP boundaries and `docs/BACKLOG.md` for implementation issues.
+See `docs/MVP_SCOPE.md` for boundaries and `docs/BACKLOG.md` for remaining launch tasks.

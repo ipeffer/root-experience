@@ -19,7 +19,18 @@
 - [ ] Error logging and basic monitoring enabled
 
 ## QA
-- [ ] Playwright smoke tests pass in preview
+- [x] Build passes (`npm run build`)
+- [x] Unit/integration tests pass (`npm test`)
+- [x] Playwright smoke tests pass in preview
+  - [x] Homepage loads
+  - [x] Gift Constructor can be completed
+  - [x] Gift result is shown
+  - [x] Gift lead form validates required fields
+  - [x] Booking Assistant can be completed
+  - [x] Booking confirmation appears
+  - [x] Consent checkbox is required
+  - [x] No payment flow exists
+  - [x] Mobile viewport renders correctly
 - [ ] Critical user journeys tested manually in en/it
 - [ ] Shopify redirects verified against provided URLs
 - [ ] Form validation and error messaging verified

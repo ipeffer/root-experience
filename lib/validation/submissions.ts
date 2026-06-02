@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const supportedLanguages = ["en", "it", "ru"] as const;
-const submissionStatuses = ["new", "reviewed", "contacted", "closed"] as const;
+const submissionStatuses = ["new", "contacted", "confirmed", "declined", "completed"] as const;
 
 const answersSchema = z.record(z.string(), z.unknown()).default({});
 
