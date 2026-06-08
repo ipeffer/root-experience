@@ -48,7 +48,8 @@ describe("public gift flow", () => {
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.slug.length).toBeGreaterThan(3);
-        expect(result.giftPageUrl).toBe(`/gift/g/${result.slug}?lang=en`);
+        expect(result.giftPageUrl).toBe(`/gift/g/${result.slug}/open?lang=en`);
+        expect(result.certificateUrl).toBe(`/gift/g/${result.slug}?lang=en`);
         expect(result.mock).toBe(true);
       }
     } finally {

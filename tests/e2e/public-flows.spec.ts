@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function completeGiftConstructor(page: Page) {
   await page.goto("/gift");
-  await expect(page.getByRole("heading", { name: "Gift Constructor" })).toBeVisible();
+  await expect(page.locator('#step-body .choice[data-key="occasion"][data-value="birthday"]')).toBeVisible();
 
   await page.locator('#step-body .choice[data-key="occasion"][data-value="birthday"]').click();
   await page.locator("#next-btn").click();
@@ -75,12 +75,18 @@ test("Gift page is created after lead submit", async ({ page }) => {
   await page.locator('input[name="consent"]').check();
   await page.locator('button[type="submit"]').click();
 
-  await expect(page).toHaveURL(/\/gift\/g\//);
+  await expect(page).toHaveURL(/\/gift\/g\/.+\/open/);
+  await expect(page.getByRole("heading", { name: /Someone prepared a gift for you/i })).toBeVisible();
+  await expect(page.getByText("Elena Rossi")).toBeVisible();
+  await page.getByRole("link", { name: "Open your gift" }).click();
+
+  await expect(page).toHaveURL(/\/gift\/g\/[^/]+\?lang=/);
   await expect(page.getByRole("heading", { name: /A gift for Elena Rossi/i })).toBeVisible();
-  await expect(page.getByText("Vineyard Day Pass").or(page.getByText("Best match"))).toBeVisible();
+  await expect(page.getByText("Your gift story")).toBeVisible();
+  await expect(page.locator(".gift-voucher-gift", { hasText: "Vineyard Day Pass" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Buy this gift on ROOT Winery" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Print / save as PDF" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Copy link" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Copy reveal link" })).toBeVisible();
   await expect(page.locator("body")).not.toContainText("qa@example.com");
 });
 

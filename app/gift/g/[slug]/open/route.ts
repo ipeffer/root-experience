@@ -1,10 +1,7 @@
-import { getGiftPageBySlug } from "../../../../lib/gift-pages/service";
-import {
-  buildGiftPageUrls,
-  renderGiftPageHtml,
-  renderGiftPageNotFound,
-} from "../../../../lib/gift-pages/renderPage";
-import type { SupportedLanguage } from "../../../../lib/recommendations/types";
+import { getGiftPageBySlug } from "../../../../../lib/gift-pages/service";
+import { buildGiftPageUrls, renderGiftPageNotFound } from "../../../../../lib/gift-pages/renderPage";
+import { renderGiftRevealHtml } from "../../../../../lib/gift-pages/renderReveal";
+import type { SupportedLanguage } from "../../../../../lib/recommendations/types";
 
 function resolveLocale(request: Request): SupportedLanguage {
   const url = new URL(request.url);
@@ -31,9 +28,9 @@ export async function GET(
   }
 
   const origin = new URL(request.url).origin;
-  const { revealUrl } = buildGiftPageUrls(page.slug, page.language, origin);
+  const { certificateUrl } = buildGiftPageUrls(page.slug, page.language, origin);
 
-  return new Response(renderGiftPageHtml(page, revealUrl), {
+  return new Response(renderGiftRevealHtml(page, certificateUrl), {
     status: 200,
     headers: { "content-type": "text/html; charset=utf-8" },
   });

@@ -14,6 +14,7 @@ export async function POST(request: Request): Promise<Response> {
           createdAt: result.createdAt,
           slug: result.slug,
           giftPageUrl: result.giftPageUrl,
+          certificateUrl: result.certificateUrl,
           mock: "mock" in result ? result.mock : false,
         },
         { status: 201 },

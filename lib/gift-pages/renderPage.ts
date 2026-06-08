@@ -1,115 +1,8 @@
-import type { SupportedLanguage } from "../recommendations/types";
+import { giftPageCopy, formatOccasionLabel } from "./copy";
+import { buildGiftStory, formatCertificateDate } from "./story";
 import type { GiftPageRecord } from "./types";
 
-const occasionLabels: Record<SupportedLanguage, Record<string, string>> = {
-  en: {
-    birthday: "Birthday",
-    anniversary: "Anniversary",
-    wedding: "Wedding",
-    corporate: "Corporate gift",
-    holiday: "Holiday",
-    thank_you: "Thank you",
-    just_because: "Just because",
-  },
-  it: {
-    birthday: "Compleanno",
-    anniversary: "Anniversario",
-    wedding: "Matrimonio",
-    corporate: "Regalo aziendale",
-    holiday: "Festività",
-    thank_you: "Grazie",
-    just_because: "Senza motivo",
-  },
-  ru: {
-    birthday: "Den' rozhdeniya",
-    anniversary: "Yubiley",
-    wedding: "Svad'ba",
-    corporate: "Korporativnyy podarok",
-    holiday: "Prazdnik",
-    thank_you: "Blagodarnost'",
-    just_because: "Prosto tak",
-  },
-};
-
-export function formatOccasionLabel(language: SupportedLanguage, occasion: string): string {
-  return occasionLabels[language][occasion] ?? occasion.replaceAll("_", " ");
-}
-
-const copy: Record<
-  SupportedLanguage,
-  {
-    pageTitle: string;
-    forRecipient: string;
-    fromGiver: string;
-    occasionLabel: string;
-    giftLabel: string;
-    messageLabel: string;
-    buyCta: string;
-    prepareCta: string;
-    prepareNote: string;
-    printCta: string;
-    shareLabel: string;
-    copyLink: string;
-    copied: string;
-    qrAlt: string;
-    footerNote: string;
-  }
-> = {
-  en: {
-    pageTitle: "Your ROOT Gift",
-    forRecipient: "A gift for",
-    fromGiver: "From",
-    occasionLabel: "Occasion",
-    giftLabel: "Recommended gift",
-    messageLabel: "Personal message",
-    buyCta: "Buy this gift on ROOT Winery",
-    prepareCta: "Request ROOT to prepare this gift",
-    prepareNote:
-      "Our concierge team can help prepare this gift with a personal touch. Contact ROOT Winery to arrange details.",
-    printCta: "Print / save as PDF",
-    shareLabel: "Share this gift page",
-    copyLink: "Copy link",
-    copied: "Link copied",
-    qrAlt: "QR code for gift page",
-    footerNote: "Crafted among the vineyards of Maiolati Spontini, Marche · Italy",
-  },
-  it: {
-    pageTitle: "Il tuo regalo ROOT",
-    forRecipient: "Un regalo per",
-    fromGiver: "Da",
-    occasionLabel: "Occasione",
-    giftLabel: "Regalo consigliato",
-    messageLabel: "Messaggio personale",
-    buyCta: "Acquista questo regalo su ROOT Winery",
-    prepareCta: "Chiedi a ROOT di preparare questo regalo",
-    prepareNote:
-      "Il nostro team concierge puo aiutarti a preparare questo regalo con un tocco personale. Contatta ROOT Winery per i dettagli.",
-    printCta: "Stampa / salva come PDF",
-    shareLabel: "Condividi questa pagina regalo",
-    copyLink: "Copia link",
-    copied: "Link copiato",
-    qrAlt: "Codice QR della pagina regalo",
-    footerNote: "Creato tra i vigneti di Maiolati Spontini, Marche · Italia",
-  },
-  ru: {
-    pageTitle: "Vash podarok ROOT",
-    forRecipient: "Podarok dlya",
-    fromGiver: "Ot",
-    occasionLabel: "Povod",
-    giftLabel: "Rekomendovannyy podarok",
-    messageLabel: "Lichnoe poslanie",
-    buyCta: "Kupit' etot podarok v ROOT Winery",
-    prepareCta: "Poprosit' ROOT podgotovit' podarok",
-    prepareNote:
-      "Nasha komanda mozhet pomoch' podgotovit' podarok s lichnym aktsentom. Svyazhites' s ROOT Winery dlya detaley.",
-    printCta: "Pechat' / sokhranit' kak PDF",
-    shareLabel: "Podelit'sya etoy stranitsey",
-    copyLink: "Kopirovat' ssylku",
-    copied: "Ssylka skopirovana",
-    qrAlt: "QR-kod stranitsy podarka",
-    footerNote: "Sozdano sredi vinogradnikov Maiolati Spontini, Marche · Italiya",
-  },
-};
+export { formatOccasionLabel } from "./copy";
 
 function escapeHtml(value: string): string {
   return value
@@ -123,16 +16,55 @@ function escapeHtml(value: string): string {
 export function giftPageStyles(): string {
   return `
     .gift-voucher {
+      position: relative;
       max-width: 680px;
       margin: 0 auto;
-      background: #fff;
-      border: 1px solid #e3e3df;
+      background:
+        linear-gradient(180deg, #fffef9 0%, #fff 28%, #fff 100%);
+      border: 2px double #c9bfb0;
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 18px 40px rgba(12, 12, 12, 0.08);
     }
+    .gift-voucher::before,
+    .gift-voucher::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      height: 1px;
+      border-top: 1px dashed #d8d0c4;
+      pointer-events: none;
+    }
+    .gift-voucher::before { top: 12px; }
+    .gift-voucher::after { bottom: 12px; }
+    .gift-certificate-badge {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 24px 0;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5f5f5b;
+    }
+    .gift-certificate-seal {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      color: #fff;
+      background: radial-gradient(circle at 30% 30%, #6b1e2a, #3a1219 70%);
+      border: 2px solid #6b1e2a;
+      flex-shrink: 0;
+    }
     .gift-voucher-hero {
-      padding: 34px 24px 28px;
+      padding: 20px 24px 28px;
       text-align: center;
       color: #fff;
       background:
@@ -148,10 +80,11 @@ export function giftPageStyles(): string {
     }
     .gift-voucher-hero h1 {
       margin: 0 0 8px;
-      font-size: clamp(1.55rem, 5vw, 2.2rem);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(1.65rem, 5vw, 2.35rem);
       font-weight: 600;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
+      letter-spacing: -0.01em;
+      line-height: 1.12;
     }
     .gift-voucher-meta {
       margin: 0;
@@ -184,13 +117,21 @@ export function giftPageStyles(): string {
       font-weight: 700;
       color: #0c0c0c;
     }
+    .gift-voucher-story {
+      margin: 0;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1.2rem;
+      line-height: 1.55;
+      color: #2f261d;
+    }
     .gift-voucher-message {
       margin: 0;
       padding: 14px 16px;
       border-left: 3px solid #6b1e2a;
       background: #f7f5f4;
       border-radius: 10px;
-      font-size: 1.02rem;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1.15rem;
       line-height: 1.55;
       color: #0c0c0c;
       font-style: italic;
@@ -204,6 +145,19 @@ export function giftPageStyles(): string {
       color: #5f5f5b;
       font-size: 0.92rem;
       line-height: 1.45;
+    }
+    .gift-moments {
+      display: grid;
+      gap: 8px;
+    }
+    .gift-moment {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #faf8f5;
+      border: 1px solid #ece7df;
+      color: #3f3a34;
+      font-size: 0.92rem;
     }
     .gift-share {
       display: grid;
@@ -220,13 +174,26 @@ export function giftPageStyles(): string {
       flex: 1 1 220px;
       min-width: 0;
       font-size: 0.88rem;
+      border: 1px solid #d8d8d3;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    .gift-qr-wrap {
+      text-align: center;
     }
     .gift-qr {
-      width: 120px;
-      height: 120px;
+      width: 132px;
+      height: 132px;
       border-radius: 12px;
-      border: 1px solid #e3e3df;
+      border: 2px solid #e3e3df;
       background: #fff;
+      padding: 6px;
+    }
+    .gift-qr-caption {
+      margin: 8px 0 0;
+      font-size: 0.82rem;
+      color: #5f5f5b;
     }
     .gift-voucher-footer {
       padding: 0 24px 24px;
@@ -234,30 +201,33 @@ export function giftPageStyles(): string {
       color: #5f5f5b;
       font-size: 0.86rem;
     }
-    .no-print { }
     @media print {
       .site-announce, .site-header, .site-footer, .site-nav, .no-print { display: none !important; }
       body { background: #fff; }
       .page-main { padding: 0; }
       .gift-voucher {
         box-shadow: none;
-        border: 1px solid #ccc;
+        border: 2px double #6b1e2a;
         max-width: none;
       }
+      .gift-certificate-seal { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     }
     @media (min-width: 768px) {
       .gift-voucher-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .gift-share { grid-template-columns: 1fr auto; }
+      .gift-moments { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
   `;
 }
 
-export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): string {
+export function renderGiftPageHtml(page: GiftPageRecord, revealUrl: string): string {
   const locale = page.language;
-  const t = copy[locale];
+  const t = giftPageCopy[locale];
   const occasion = formatOccasionLabel(locale, page.occasion);
+  const story = buildGiftStory(page);
+  const certificateDate = formatCertificateDate(page.created_at, locale);
   const ctaUrl = page.cta_url || "https://rootwinery.it";
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(shareUrl)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=132x132&data=${encodeURIComponent(revealUrl)}`;
 
   const messageBlock = page.personal_message
     ? `<section class="gift-voucher-section">
@@ -274,7 +244,7 @@ export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): stri
     <title>${escapeHtml(t.pageTitle)} · ${escapeHtml(page.recipient_name)} | ROOT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
         --root-ink: #0c0c0c;
@@ -331,15 +301,9 @@ export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): stri
         border: 0;
         cursor: pointer;
       }
-      .btn-wine, a.btn-wine {
-        background: var(--root-wine);
-        color: #fff;
-      }
+      .btn-wine, a.btn-wine { background: var(--root-wine); color: #fff; }
       .btn-wine:hover { background: var(--root-wine-hover); }
-      .btn-primary, a.btn-primary, button.btn-primary {
-        background: var(--root-ink);
-        color: #fff;
-      }
+      .btn-primary, a.btn-primary, button.btn-primary { background: var(--root-ink); color: #fff; }
       .btn-ghost, a.btn-ghost, button.btn-ghost {
         background: #fff;
         color: var(--root-ink);
@@ -349,7 +313,7 @@ export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): stri
     </style>
   </head>
   <body>
-    <div class="site-announce">ROOT Experience · Personal gift page</div>
+    <div class="site-announce">ROOT Experience · Personal gift certificate</div>
     <header class="site-header no-print">
       <div class="site-header-inner">
         <a class="brand" href="https://rootwinery.it" rel="noopener noreferrer">ROOT</a>
@@ -357,12 +321,20 @@ export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): stri
     </header>
     <main class="page-main">
       <article class="gift-voucher">
+        <div class="gift-certificate-badge">
+          <span>${escapeHtml(t.certificateLabel)} · ${escapeHtml(certificateDate)}</span>
+          <div class="gift-certificate-seal" aria-hidden="true">R</div>
+        </div>
         <header class="gift-voucher-hero">
           <p class="gift-voucher-brand">ROOT Winery</p>
           <h1>${escapeHtml(t.forRecipient)} ${escapeHtml(page.recipient_name)}</h1>
           <p class="gift-voucher-meta">${escapeHtml(t.fromGiver)} ${escapeHtml(page.giver_name)}</p>
         </header>
         <div class="gift-voucher-body">
+          <section class="gift-voucher-section">
+            <p class="gift-voucher-label">${t.storyLabel}</p>
+            <p class="gift-voucher-story">${escapeHtml(story)}</p>
+          </section>
           <section class="gift-voucher-section">
             <p class="gift-voucher-label">${t.occasionLabel}</p>
             <p class="gift-voucher-gift">${escapeHtml(occasion)}</p>
@@ -380,16 +352,28 @@ export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): stri
             <p class="gift-voucher-note">${escapeHtml(t.prepareNote)}</p>
           </section>
           <section class="gift-voucher-section no-print">
+            <p class="gift-voucher-label">${t.momentsTitle}</p>
+            <div class="gift-moments">
+              <p class="gift-moment">${escapeHtml(t.moment1)}</p>
+              <p class="gift-moment">${escapeHtml(t.moment2)}</p>
+              <p class="gift-moment">${escapeHtml(t.moment3)}</p>
+            </div>
+          </section>
+          <section class="gift-voucher-section no-print">
             <button class="btn btn-ghost" type="button" onclick="window.print()">${t.printCta}</button>
           </section>
           <section class="gift-voucher-section no-print">
             <p class="gift-voucher-label">${t.shareLabel}</p>
+            <p class="gift-voucher-note">${escapeHtml(t.shareHint)}</p>
             <div class="gift-share">
               <div class="gift-share-row">
-                <input class="gift-share-input" id="share-url" type="text" readonly value="${escapeHtml(shareUrl)}" />
+                <input class="gift-share-input" id="share-url" type="text" readonly value="${escapeHtml(revealUrl)}" />
                 <button class="btn btn-primary" type="button" id="copy-link">${t.copyLink}</button>
               </div>
-              <img class="gift-qr" src="${escapeHtml(qrUrl)}" alt="${escapeHtml(t.qrAlt)}" width="120" height="120" />
+              <div class="gift-qr-wrap">
+                <img class="gift-qr" src="${escapeHtml(qrUrl)}" alt="${escapeHtml(t.qrAlt)}" width="132" height="132" />
+                <p class="gift-qr-caption">${escapeHtml(t.qrCaption)}</p>
+              </div>
             </div>
           </section>
         </div>
@@ -416,7 +400,7 @@ export function renderGiftPageHtml(page: GiftPageRecord, shareUrl: string): stri
 </html>`;
 }
 
-export function renderGiftPageNotFound(language: SupportedLanguage = "en"): string {
+export function renderGiftPageNotFound(language: "en" | "it" | "ru" = "en"): string {
   const messages = {
     en: "This gift page is unavailable.",
     it: "Questa pagina regalo non e disponibile.",
@@ -435,4 +419,20 @@ export function renderGiftPageNotFound(language: SupportedLanguage = "en"): stri
     <p><a href="/gift?lang=${language}">ROOT Gift Constructor</a></p>
   </body>
 </html>`;
+}
+
+export function buildGiftPageUrls(slug: string, language: string, origin: string): {
+  certificateUrl: string;
+  revealUrl: string;
+} {
+  const certificateUrl = new URL(`/gift/g/${slug}`, origin);
+  certificateUrl.searchParams.set("lang", language);
+
+  const revealUrl = new URL(`/gift/g/${slug}/open`, origin);
+  revealUrl.searchParams.set("lang", language);
+
+  return {
+    certificateUrl: certificateUrl.toString(),
+    revealUrl: revealUrl.toString(),
+  };
 }

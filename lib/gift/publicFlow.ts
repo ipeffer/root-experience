@@ -32,6 +32,7 @@ export interface PublicGiftLeadResponse {
   createdAt: string;
   slug: string;
   giftPageUrl: string;
+  certificateUrl: string;
   mock?: true;
 }
 
@@ -139,7 +140,7 @@ export async function submitPublicGiftLead(input: unknown): Promise<
     return pageResult;
   }
 
-  const giftPageUrl = `/gift/g/${pageResult.slug}?lang=${parsed.language}`;
+  const giftPageUrl = `/gift/g/${pageResult.slug}/open?lang=${parsed.language}`;
 
   return {
     ok: true,
@@ -147,6 +148,7 @@ export async function submitPublicGiftLead(input: unknown): Promise<
     createdAt,
     slug: pageResult.slug,
     giftPageUrl,
+    certificateUrl: `/gift/g/${pageResult.slug}?lang=${parsed.language}`,
     mock: isMockLead || pageResult.mock ? true : undefined,
   };
 }

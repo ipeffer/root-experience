@@ -4,6 +4,7 @@ import { GET as homeGet } from "../../app/route";
 import { GET as giftGet } from "../../app/gift/route";
 import { GET as giftResultGet } from "../../app/gift/result/route";
 import { GET as giftPageGet } from "../../app/gift/g/[slug]/route";
+import { GET as giftRevealGet } from "../../app/gift/g/[slug]/open/route";
 import { GET as bookingGet } from "../../app/booking/route";
 import { GET as bookingConfirmationGet } from "../../app/booking/confirmation/route";
 import { POST as giftRecommendationPost } from "../../app/api/gift/recommendation/route";
@@ -34,11 +35,18 @@ function getHandler(method: string, pathname: string): RouteHandler | null {
   }
 
   if (method === "GET" && pathname.startsWith("/gift/g/")) {
-    const slug = pathname.slice("/gift/g/".length);
-    if (!slug) {
+    const rest = pathname.slice("/gift/g/".length);
+    if (!rest) {
       return null;
     }
-    return (request: Request) => giftPageGet(request, { params: Promise.resolve({ slug }) });
+    if (rest.endsWith("/open")) {
+      const slug = rest.slice(0, -"/open".length);
+      if (!slug) {
+        return null;
+      }
+      return (request: Request) => giftRevealGet(request, { params: Promise.resolve({ slug }) });
+    }
+    return (request: Request) => giftPageGet(request, { params: Promise.resolve({ slug: rest }) });
   }
 
   return null;
