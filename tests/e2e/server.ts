@@ -3,29 +3,53 @@ import http from "node:http";
 import { GET as homeGet } from "../../app/route";
 import { GET as giftGet } from "../../app/gift/route";
 import { GET as giftResultGet } from "../../app/gift/result/route";
+import { GET as giftPageGet } from "../../app/gift/g/[slug]/route";
+import { GET as giftRevealGet } from "../../app/gift/g/[slug]/open/route";
 import { GET as bookingGet } from "../../app/booking/route";
 import { GET as bookingConfirmationGet } from "../../app/booking/confirmation/route";
 import { POST as giftRecommendationPost } from "../../app/api/gift/recommendation/route";
 import { POST as giftLeadPost } from "../../app/api/gift/lead/route";
 import { POST as bookingRequestPost } from "../../app/api/booking/request/route";
 
+type RouteHandler = (request: Request, context?: { params: Promise<Record<string, string>> }) => Promise<Response>;
+
 const routeMap = {
-  GET: new Map([
+  GET: new Map<string, RouteHandler>([
     ["/", homeGet],
     ["/gift", giftGet],
     ["/gift/result", giftResultGet],
     ["/booking", bookingGet],
     ["/booking/confirmation", bookingConfirmationGet],
   ]),
-  POST: new Map([
+  POST: new Map<string, RouteHandler>([
     ["/api/gift/recommendation", giftRecommendationPost],
     ["/api/gift/lead", giftLeadPost],
     ["/api/booking/request", bookingRequestPost],
   ]),
 };
 
-function getHandler(method: string, pathname: string) {
-  return routeMap[method as keyof typeof routeMap]?.get(pathname) ?? null;
+function getHandler(method: string, pathname: string): RouteHandler | null {
+  const staticHandler = routeMap[method as keyof typeof routeMap]?.get(pathname);
+  if (staticHandler) {
+    return staticHandler;
+  }
+
+  if (method === "GET" && pathname.startsWith("/gift/g/")) {
+    const rest = pathname.slice("/gift/g/".length);
+    if (!rest) {
+      return null;
+    }
+    if (rest.endsWith("/open")) {
+      const slug = rest.slice(0, -"/open".length);
+      if (!slug) {
+        return null;
+      }
+      return (request: Request) => giftRevealGet(request, { params: Promise.resolve({ slug }) });
+    }
+    return (request: Request) => giftPageGet(request, { params: Promise.resolve({ slug: rest }) });
+  }
+
+  return null;
 }
 
 const server = http.createServer(async (req, res) => {

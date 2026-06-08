@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function completeGiftConstructor(page: Page) {
   await page.goto("/gift");
-  await expect(page.getByRole("heading", { name: "Gift Constructor" })).toBeVisible();
+  await expect(page.locator('#step-body .choice[data-key="occasion"][data-value="birthday"]')).toBeVisible();
 
   await page.locator('#step-body .choice[data-key="occasion"][data-value="birthday"]').click();
   await page.locator("#next-btn").click();
@@ -37,7 +37,9 @@ async function completeBookingToConsent(page: Page) {
 
 test("Homepage loads", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "ROOT Experience" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "A new generation of wine experiences" }),
+  ).toBeVisible();
   await expect(page.getByRole("link", { name: "Open Gift Constructor" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open Booking Assistant" })).toBeVisible();
 });
@@ -58,9 +60,34 @@ test("Gift lead form validates required fields", async ({ page }) => {
   await completeGiftConstructor(page);
   await page.locator('button[type="submit"]').click();
 
-  await expect(page.locator('input[name="contactName"]:invalid')).toBeVisible();
+  await expect(page.locator('input[name="recipientName"]:invalid')).toBeVisible();
+  await expect(page.locator('input[name="giverName"]:invalid')).toBeVisible();
   await expect(page.locator('input[name="email"]:invalid')).toBeVisible();
   await expect(page.locator('input[name="consent"]:invalid')).toBeVisible();
+});
+
+test("Gift page is created after lead submit", async ({ page }) => {
+  await completeGiftConstructor(page);
+  await page.fill('input[name="recipientName"]', "Elena Rossi");
+  await page.fill('input[name="giverName"]', "QA Tester");
+  await page.fill('textarea[name="personalMessage"]', "A vineyard gift for you.");
+  await page.fill('input[name="email"]', "qa@example.com");
+  await page.locator('input[name="consent"]').check();
+  await page.locator('button[type="submit"]').click();
+
+  await expect(page).toHaveURL(/\/gift\/g\/.+\/open/);
+  await expect(page.getByRole("heading", { name: /Someone prepared a gift for you/i })).toBeVisible();
+  await expect(page.getByText("Elena Rossi")).toBeVisible();
+  await page.getByRole("link", { name: "Open your gift" }).click();
+
+  await expect(page).toHaveURL(/\/gift\/g\/[^/]+\?lang=/);
+  await expect(page.getByRole("heading", { name: /A gift for Elena Rossi/i })).toBeVisible();
+  await expect(page.getByText("Your gift story")).toBeVisible();
+  await expect(page.locator(".gift-voucher-gift", { hasText: "Vineyard Day Pass" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Buy this gift on ROOT Winery" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Print / save as PDF" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Copy reveal link" })).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("qa@example.com");
 });
 
 test("Booking Assistant can be completed", async ({ page }) => {
@@ -104,10 +131,10 @@ test.describe("Mobile viewport", () => {
   test("Mobile viewport renders correctly", async ({ page }) => {
     await page.goto("/gift");
     await expect(page.getByRole("heading", { name: "Gift Constructor" })).toBeVisible();
-    await expect(page.locator(".card")).toBeVisible();
+    await expect(page.locator(".page-card")).toBeVisible();
 
     const viewportWidth = page.viewportSize()?.width ?? 390;
-    const mainWidth = await page.locator(".card").evaluate((element) => {
+    const mainWidth = await page.locator(".page-card").evaluate((element) => {
       const rect = element.getBoundingClientRect();
       return Math.ceil(rect.right);
     });
